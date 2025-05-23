@@ -14,6 +14,17 @@ A clean, lightweight .NET 9 SDK for working with the PRTG Network Monitor API.
 - 🚦 Handles pagination and throttling
 - 🪶 Minimal dependencies, logging via `ILogger<T>`
 
+## Security & Auth Notes
+
+This SDK uses **PRTG API v1**, which authenticates via API token passed in the query string.
+
+- ✅ Best used with a **dedicated, read-only PRTG user** account.
+- 🔐 Ensure HTTPS is enabled on your PRTG server.
+- 🚫 Do not log full request URLs — the SDK redacts API tokens in debug logs.
+- ⏱️ All HTTP requests enforce a timeout and avoid blocking indefinitely.
+
+For session-based auth with bearer tokens (API v2), use a different integration — this SDK is intentionally optimized for unattended, background service use.
+
 ## Installation
 
 This SDK is designed for internal use but may be published to NuGet in the future.
@@ -28,6 +39,8 @@ This SDK is designed for internal use but may be published to NuGet in the futur
   }
 }
 ```
+
+You may also call `.Validate()` on `PrtgOptions` to ensure required fields are set and well-formed.
 
 Bind this config using:
 
@@ -48,6 +61,8 @@ var sensors = await prtgService.GetSensorsByDeviceIdAsync(device.ObjectId);
 All operations use `ILogger<T>`:
 - `Debug` level for API calls, pagination, counts
 - `Warning` for non-success responses
+
+If logging full sensor or device payloads, use `.SanitizeForLog()` to redact diagnostic fields like `Message`, `Status`, or names.
 
 
 ---
