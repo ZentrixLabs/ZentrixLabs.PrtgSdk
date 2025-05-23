@@ -34,7 +34,7 @@ namespace ZentrixLabs.PrtgSdk.Services
         public async Task<int?> GetDeviceIdByNameAsync(string deviceName)
         {
             var url = $"{_baseUrl}/api/table.json?content=devices&output=json&columns=objid&filter_device={Uri.EscapeDataString(deviceName)}&apitoken={_apiToken}";
-            _logger.LogInformation("[DEBUG] Fetching device ID for {DeviceName}, URL: {Url}", deviceName, url);
+            _logger.LogDebug("[DEBUG] Fetching device ID for {DeviceName}, URL: {Url}", deviceName, url);
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -45,7 +45,7 @@ namespace ZentrixLabs.PrtgSdk.Services
 
             var result = await response.Content.ReadFromJsonAsync<PrtgDeviceResponse>();
             var deviceId = result?.Devices.FirstOrDefault()?.ObjectId;
-            _logger.LogInformation("[DEBUG] Device ID for {DeviceName}: {DeviceId}", deviceName, deviceId ?? -1);
+            _logger.LogDebug("[DEBUG] Device ID for {DeviceName}: {DeviceId}", deviceName, deviceId ?? -1);
             return deviceId;
         }
 
@@ -59,7 +59,7 @@ namespace ZentrixLabs.PrtgSdk.Services
             }
 
             var url = $"{_baseUrl}/api/table.json?content=sensors&output=json&columns=objid,sensor,status,message,lastvalue&filter_parentid={deviceId}&apitoken={_apiToken}";
-            _logger.LogInformation("[DEBUG] Fetching sensors for {DeviceName} (ID: {DeviceId}), URL: {Url}", deviceName, deviceId, url);
+            _logger.LogDebug("[DEBUG] Fetching sensors for {DeviceName} (ID: {DeviceId}), URL: {Url}", deviceName, deviceId, url);
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -70,7 +70,7 @@ namespace ZentrixLabs.PrtgSdk.Services
 
             var result = await response.Content.ReadFromJsonAsync<PrtgSensorResponse>();
             var sensors = result?.Sensors;
-            _logger.LogInformation("[DEBUG] Fetched {SensorCount} sensors for {DeviceName}", sensors?.Count ?? 0, deviceName);
+            _logger.LogDebug("[DEBUG] Fetched {SensorCount} sensors for {DeviceName}", sensors?.Count ?? 0, deviceName);
             return sensors;
         }
 
@@ -113,7 +113,7 @@ namespace ZentrixLabs.PrtgSdk.Services
             while (true)
             {
                 var url = $"{_baseUrl}/api/table.json?content=sensors&output=json&columns=objid,sensor,status,message,lastvalue&filter_parentid={deviceId}&start={start}&count={pageSize}&apitoken={_apiToken}";
-                _logger.LogInformation("[DEBUG] Fetching sensors page starting at {Start} for device ID {DeviceId}, URL: {Url}", start, deviceId, url);
+                _logger.LogDebug("[DEBUG] Fetching sensors page starting at {Start} for device ID {DeviceId}, URL: {Url}", start, deviceId, url);
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
@@ -138,15 +138,9 @@ namespace ZentrixLabs.PrtgSdk.Services
                 start += pageSize;
             }
 
-            _logger.LogInformation("[DEBUG] Total sensors fetched for device ID {DeviceId}: {Count}", deviceId, sensors.Count);
+            _logger.LogDebug("[DEBUG] Total sensors fetched for device ID {DeviceId}: {Count}", deviceId, sensors.Count);
             return sensors;
         }
-
-    }
-
-
-}
-
 
         /// <summary>
         /// Bulk fetch sensors for a list of PrtgDevice, limiting concurrency to avoid hammering the PRTG API.
@@ -189,3 +183,8 @@ namespace ZentrixLabs.PrtgSdk.Services
             await Task.WhenAll(tasks);
             return result;
         }
+
+    }
+
+
+}
