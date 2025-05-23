@@ -7,4 +7,12 @@ public class PrtgDeviceResponse
 {
     [JsonPropertyName("devices")]
     public List<PrtgDevice> Devices { get; set; } = new();
+
+    public PrtgDeviceResponse SanitizeForLog()
+    {
+        return new PrtgDeviceResponse
+        {
+            Devices = this.Devices.Select(d => d.SanitizeForLog()).ToList()
+        };
+    }
 }

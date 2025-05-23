@@ -2,8 +2,14 @@
 
 public static class SensorClassifier
 {
+    /// <summary>
+    /// Attempts to classify a PRTG sensor name into a known SensorType.
+    /// Classification is heuristic and based on common keyword matches.
+    /// </summary>
     public static SensorType Classify(string sensorName)
     {
+        if (string.IsNullOrWhiteSpace(sensorName)) return SensorType.Unknown;
+
         var name = sensorName.ToLowerInvariant();
 
         if (name.Contains("cpu")) return SensorType.CPU;

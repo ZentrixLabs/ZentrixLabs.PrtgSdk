@@ -13,6 +13,13 @@ namespace ZentrixLabs.PrtgSdk.Services
 {
     public class PrtgService
     {
+        // NOTE: This service uses PRTG API v1 (https://www.paessler.com/manuals/prtg/http_api)
+        // It is designed for background use with a dedicated read-only API token.
+        // For security:
+        // - Do NOT log full URLs with tokens
+        // - Do NOT reuse tokens between services/users
+        // - Use HTTPS and enforce TLS 1.2+
+
         private readonly HttpClient _httpClient;
         private readonly PrtgOptions _options;
         private readonly ILogger<PrtgService> _logger;
@@ -24,6 +31,7 @@ namespace ZentrixLabs.PrtgSdk.Services
         public PrtgService(HttpClient httpClient, IOptions<PrtgOptions> options, ILogger<PrtgService> logger)
         {
             _httpClient = httpClient;
+            _httpClient.Timeout = TimeSpan.FromSeconds(30); // Set safe timeout
             _options = options.Value;
 
             _baseUrl = _options.BaseUrl ?? throw new InvalidOperationException("PRTG:BaseUrl missing");
@@ -33,8 +41,10 @@ namespace ZentrixLabs.PrtgSdk.Services
 
         public async Task<int?> GetDeviceIdByNameAsync(string deviceName)
         {
+            if (string.IsNullOrWhiteSpace(deviceName)) return null;
+
             var url = $"{_baseUrl}/api/table.json?content=devices&output=json&columns=objid&filter_device={Uri.EscapeDataString(deviceName)}&apitoken={_apiToken}";
-            _logger.LogDebug("[DEBUG] Fetching device ID for {DeviceName}, URL: {Url}", deviceName, url);
+            _logger.LogDebug("[DEBUG] Fetching device ID for {DeviceName}, URL: {Url}", deviceName, url.Replace(_apiToken, "[REDACTED]"));
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -59,7 +69,7 @@ namespace ZentrixLabs.PrtgSdk.Services
             }
 
             var url = $"{_baseUrl}/api/table.json?content=sensors&output=json&columns=objid,sensor,status,message,lastvalue&filter_parentid={deviceId}&apitoken={_apiToken}";
-            _logger.LogDebug("[DEBUG] Fetching sensors for {DeviceName} (ID: {DeviceId}), URL: {Url}", deviceName, deviceId, url);
+            _logger.LogDebug("[DEBUG] Fetching sensors for {DeviceName} (ID: {DeviceId}), URL: {Url}", deviceName, deviceId, url.Replace(_apiToken, "[REDACTED]"));
 
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -113,7 +123,7 @@ namespace ZentrixLabs.PrtgSdk.Services
             while (true)
             {
                 var url = $"{_baseUrl}/api/table.json?content=sensors&output=json&columns=objid,sensor,status,message,lastvalue&filter_parentid={deviceId}&start={start}&count={pageSize}&apitoken={_apiToken}";
-                _logger.LogDebug("[DEBUG] Fetching sensors page starting at {Start} for device ID {DeviceId}, URL: {Url}", start, deviceId, url);
+                _logger.LogDebug("[DEBUG] Fetching sensors page starting at {Start} for device ID {DeviceId}, URL: {Url}", start, deviceId, url.Replace(_apiToken, "[REDACTED]"));
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)

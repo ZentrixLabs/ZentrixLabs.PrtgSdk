@@ -5,6 +5,10 @@ using System.Text.RegularExpressions;
 
 namespace ZentrixLabs.PrtgSdk.Formatting;
 
+
+/// Utility for formatting PRTG sensor data for display.
+/// Note: Formatter methods may receive diagnostic or verbose input from PRTG.
+/// Avoid logging raw sensor.Message or sensor.LastValue without sanitation.
 public static class SensorFormatter
 {
     public static string FormatLabel(PrtgSensor sensor)
@@ -58,12 +62,14 @@ public static class SensorFormatter
         return StripHtml(sensor.Message);
     }
 
+    // Extracts the first numeric value from a string (e.g., "23.4 %"). Does not handle scientific notation.
     private static string? ExtractFirstNumber(string input)
     {
         var match = Regex.Match(input, @"([\d\.]+)");
         return match.Success ? match.Groups[1].Value : null;
     }
 
+    // Naive HTML stripper for basic inline tags (e.g., "<br>", "<div>"). Not suitable for arbitrary HTML or malformed input.
     private static string StripHtml(string? input)
     {
         return string.IsNullOrWhiteSpace(input)

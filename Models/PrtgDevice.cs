@@ -14,6 +14,17 @@ namespace ZentrixLabs.PrtgSdk.Models
         public string GroupName { get; set; } = string.Empty;
 
         [JsonPropertyName("probe")]
-        public string ProbeName { get; set; } = string.Empty; // Optional
+        public string? ProbeName { get; set; } // Optional
+        
+        public PrtgDevice SanitizeForLog()
+        {
+            return new PrtgDevice
+            {
+                ObjectId = this.ObjectId,
+                DeviceName = "[REDACTED]",
+                GroupName = "[REDACTED]",
+                ProbeName = "[REDACTED]"
+            };
+        }
     }
 }

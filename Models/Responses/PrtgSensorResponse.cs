@@ -9,4 +9,12 @@ public class PrtgSensorResponse
 {
     [JsonPropertyName("sensors")]
     public List<PrtgSensor> Sensors { get; set; } = new();
+
+    public PrtgSensorResponse SanitizeForLog()
+    {
+        return new PrtgSensorResponse
+        {
+            Sensors = this.Sensors.Select(s => s.SanitizeForLog()).ToList()
+        };
+    }
 }
