@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Zentrixlabs.PrtgSdk")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+980af06ece7953977e4ab95d714455b06260faf7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Zentrixlabs.PrtgSdk")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Zentrixlabs.PrtgSdk")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
