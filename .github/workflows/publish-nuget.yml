@@ -45,6 +45,10 @@ jobs:
           echo "Found: $($pkg.FullName)"
           echo "nupkg_path=$($pkg.FullName)" >> $env:GITHUB_OUTPUT
 
+      - name: Create temp directory for signed output
+        run: New-Item -ItemType Directory -Force -Path "nupkgs-signed"
+        shell: powershell
+
       - name: Sign .nupkg file (SSL.com eSigner)
         if: env.SIGN_CODE == 'true'
         uses: sslcom/esigner-codesign@develop
@@ -55,7 +59,7 @@ jobs:
           credential_id: ${{ secrets.CODESIGN_CREDENTIAL_ID }}
           totp_secret: ${{ secrets.CODESIGN_TOTP_SECRET }}
           file_path: ${{ steps.locate_nupkg.outputs.nupkg_path }}
-          output_path: ./nupkgs
+          output_path: ./nupkgs-signed
           environment_name: PROD
           signing_method: v2
           malware_block: false
