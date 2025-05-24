@@ -6,8 +6,11 @@ on:
       - 'v*.*.*' # Triggers on version tags like v1.0.0
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
+  build-sign-publish:
+    runs-on: windows-latest
+    env:
+      SIGN_CODE: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,8 +27,25 @@ jobs:
 
       - name: Pack
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$VERSION
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$version
+        shell: pwsh
+
+      - name: Sign .nupkg file (SSL.com eSigner)
+        if: env.SIGN_CODE == 'true'
+        uses: sslcom/esigner-codesign@develop
+        with:
+          command: sign
+          username: ${{ secrets.CODESIGN_USERNAME }}
+          password: ${{ secrets.CODESIGN_PASSWORD }}
+          credential_id: ${{ secrets.CODESIGN_CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.CODESIGN_TOTP_SECRET }}
+          file_path: ./nupkgs/ZentrixLabs.PrtgSdk.*.nupkg
+          output_path: ./nupkgs
+          environment_name: PROD
+          signing_method: v2
+          malware_block: false
+        timeout-minutes: 10
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
