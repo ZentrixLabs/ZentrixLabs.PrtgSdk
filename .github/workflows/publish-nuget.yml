@@ -60,8 +60,10 @@ jobs:
         timeout-minutes: 10
 
       - name: Replace original .nupkg with signed version
-        run: Copy-Item "./nupkgs-signed/*.nupkg" "./nupkgs/" -Force
-        shell: powershell
+        shell: pwsh
+        run: |
+          $signed = Get-ChildItem -Path "./nupkgs-signed" -Filter "*.nupkg" | Select-Object -First 1
+          Copy-Item -Path $signed.FullName -Destination "./nupkgs/" -Force
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
