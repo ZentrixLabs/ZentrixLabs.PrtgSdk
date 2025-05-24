@@ -31,12 +31,6 @@ jobs:
           dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$version
         shell: pwsh
 
-      - name: Pack
-        run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$version
-        shell: pwsh
-
       - name: Get .nupkg path
         id: locate_nupkg
         shell: pwsh
@@ -64,6 +58,10 @@ jobs:
           signing_method: v2
           malware_block: false
         timeout-minutes: 10
+
+      - name: Replace original .nupkg with signed version
+        run: Copy-Item "./nupkgs-signed/*.nupkg" "./nupkgs/" -Force
+        shell: powershell
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
