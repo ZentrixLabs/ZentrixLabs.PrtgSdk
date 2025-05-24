@@ -62,8 +62,13 @@ jobs:
       - name: Replace original .nupkg with signed version
         shell: pwsh
         run: |
-          $signed = Get-ChildItem -Path "./nupkgs-signed" -Filter "*.nupkg" | Select-Object -First 1
+          $signed = Get-ChildItem -Path "./nupkgs-signed" -Filter "*.nupkg" -Recurse | Select-Object -First 1
+          if (-not $signed) {
+            Write-Error "Signed .nupkg not found"
+            exit 1
+          }
           Copy-Item -Path $signed.FullName -Destination "./nupkgs/" -Force
+          Get-ChildItem -Path "./nupkgs" -Filter "*.nupkg"
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
