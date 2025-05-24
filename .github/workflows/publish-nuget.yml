@@ -31,6 +31,20 @@ jobs:
           dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$version
         shell: pwsh
 
+      - name: Pack
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          dotnet pack --configuration Release --no-build --output ./nupkgs -p:PackageVersion=$version
+        shell: pwsh
+
+      - name: Get .nupkg path
+        id: locate_nupkg
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Path "./nupkgs" -Filter "ZentrixLabs.PrtgSdk.*.nupkg" | Select-Object -First 1
+          echo "Found: $($pkg.FullName)"
+          echo "nupkg_path=$($pkg.FullName)" >> $env:GITHUB_OUTPUT
+
       - name: Sign .nupkg file (SSL.com eSigner)
         if: env.SIGN_CODE == 'true'
         uses: sslcom/esigner-codesign@develop
@@ -40,7 +54,7 @@ jobs:
           password: ${{ secrets.CODESIGN_PASSWORD }}
           credential_id: ${{ secrets.CODESIGN_CREDENTIAL_ID }}
           totp_secret: ${{ secrets.CODESIGN_TOTP_SECRET }}
-          file_path: ./nupkgs/ZentrixLabs.PrtgSdk.*.nupkg
+          file_path: ${{ steps.locate_nupkg.outputs.nupkg_path }}
           output_path: ./nupkgs
           environment_name: PROD
           signing_method: v2
