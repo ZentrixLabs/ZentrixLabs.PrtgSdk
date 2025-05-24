@@ -71,4 +71,11 @@ jobs:
           Get-ChildItem -Path "./nupkgs" -Filter "*.nupkg"
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Path "./nupkgs" -Filter "*.nupkg" | Select-Object -First 1
+          if (-not $pkg) {
+            Write-Error "No .nupkg file found to publish"
+            exit 1
+          }
+          dotnet nuget push $pkg.FullName --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"
